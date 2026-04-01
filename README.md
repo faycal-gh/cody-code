@@ -1,6 +1,6 @@
 # Cody Code
 
-@file:cody.png
+![Cody](rust/assets/cody.png)
 
 This repository contains a working Rust CLI for `cody`.
 
