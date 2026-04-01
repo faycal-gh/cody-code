@@ -1,15 +1,15 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const STARTER_CLAW_JSON: &str = concat!(
+const STARTER_CODY_JSON: &str = concat!(
     "{\n",
     "  \"permissions\": {\n",
     "    \"defaultMode\": \"dontAsk\"\n",
     "  }\n",
     "}\n",
 );
-const GITIGNORE_COMMENT: &str = "# Claw Code local artifacts";
-const GITIGNORE_ENTRIES: [&str; 2] = [".claw/settings.local.json", ".claw/sessions/"];
+const GITIGNORE_COMMENT: &str = "# Cody Code local artifacts";
+const GITIGNORE_ENTRIES: [&str; 2] = [".cody/settings.local.json", ".cody/sessions/"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum InitStatus {
@@ -80,16 +80,16 @@ struct RepoDetection {
 pub(crate) fn initialize_repo(cwd: &Path) -> Result<InitReport, Box<dyn std::error::Error>> {
     let mut artifacts = Vec::new();
 
-    let claw_dir = cwd.join(".claw");
+    let cody_dir = cwd.join(".cody");
     artifacts.push(InitArtifact {
-        name: ".claw/",
-        status: ensure_dir(&claw_dir)?,
+        name: ".cody/",
+        status: ensure_dir(&cody_dir)?,
     });
 
-    let claw_json = cwd.join(".claw.json");
+    let cody_json = cwd.join(".cody.json");
     artifacts.push(InitArtifact {
-        name: ".claw.json",
-        status: write_file_if_missing(&claw_json, STARTER_CLAW_JSON)?,
+        name: ".cody.json",
+        status: write_file_if_missing(&cody_json, STARTER_CODY_JSON)?,
     });
 
     let gitignore = cwd.join(".gitignore");
@@ -98,11 +98,11 @@ pub(crate) fn initialize_repo(cwd: &Path) -> Result<InitReport, Box<dyn std::err
         status: ensure_gitignore_entries(&gitignore)?,
     });
 
-    let claw_md = cwd.join("CLAW.md");
-    let content = render_init_claw_md(cwd);
+    let cody_md = cwd.join("CODY.md");
+    let content = render_init_cody_md(cwd);
     artifacts.push(InitArtifact {
-        name: "CLAW.md",
-        status: write_file_if_missing(&claw_md, &content)?,
+        name: "CODY.md",
+        status: write_file_if_missing(&cody_md, &content)?,
     });
 
     Ok(InitReport {
@@ -159,12 +159,12 @@ fn ensure_gitignore_entries(path: &Path) -> Result<InitStatus, std::io::Error> {
     Ok(InitStatus::Updated)
 }
 
-pub(crate) fn render_init_claw_md(cwd: &Path) -> String {
+pub(crate) fn render_init_cody_md(cwd: &Path) -> String {
     let detection = detect_repo(cwd);
     let mut lines = vec![
-        "# CLAW.md".to_string(),
+        "# CODY.md".to_string(),
         String::new(),
-        "This file provides guidance to Claw Code (clawcode.dev) when working with code in this repository.".to_string(),
+        "This file provides guidance to Cody Code (codycode.dev) when working with code in this repository.".to_string(),
         String::new(),
     ];
 
@@ -209,8 +209,8 @@ pub(crate) fn render_init_claw_md(cwd: &Path) -> String {
 
     lines.push("## Working agreement".to_string());
     lines.push("- Prefer small, reviewable changes and keep generated bootstrap files aligned with actual repo workflows.".to_string());
-    lines.push("- Keep shared defaults in `.claw.json`; reserve `.claw/settings.local.json` for machine-local overrides.".to_string());
-    lines.push("- Do not overwrite existing `CLAW.md` content automatically; update it intentionally when repo workflows change.".to_string());
+    lines.push("- Keep shared defaults in `.cody.json`; reserve `.cody/settings.local.json` for machine-local overrides.".to_string());
+    lines.push("- Do not overwrite existing `CODY.md` content automatically; update it intentionally when repo workflows change.".to_string());
     lines.push(String::new());
 
     lines.join("\n")
@@ -333,7 +333,7 @@ fn framework_notes(detection: &RepoDetection) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{initialize_repo, render_init_claw_md};
+    use super::{initialize_repo, render_init_cody_md};
     use std::fs;
     use std::path::Path;
     use std::time::{SystemTime, UNIX_EPOCH};
@@ -343,7 +343,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("time should be after epoch")
             .as_nanos();
-        std::env::temp_dir().join(format!("claw-init-{nanos}"))
+        std::env::temp_dir().join(format!("cody-init-{nanos}"))
     }
 
     #[test]
@@ -354,15 +354,15 @@ mod tests {
 
         let report = initialize_repo(&root).expect("init should succeed");
         let rendered = report.render();
-        assert!(rendered.contains(".claw/           created"));
-        assert!(rendered.contains(".claw.json       created"));
+        assert!(rendered.contains(".cody/           created"));
+        assert!(rendered.contains(".cody.json       created"));
         assert!(rendered.contains(".gitignore       created"));
-        assert!(rendered.contains("CLAW.md          created"));
-        assert!(root.join(".claw").is_dir());
-        assert!(root.join(".claw.json").is_file());
-        assert!(root.join("CLAW.md").is_file());
+        assert!(rendered.contains("CODY.md          created"));
+        assert!(root.join(".cody").is_dir());
+        assert!(root.join(".cody.json").is_file());
+        assert!(root.join("CODY.md").is_file());
         assert_eq!(
-            fs::read_to_string(root.join(".claw.json")).expect("read claw json"),
+            fs::read_to_string(root.join(".cody.json")).expect("read cody json"),
             concat!(
                 "{\n",
                 "  \"permissions\": {\n",
@@ -372,11 +372,11 @@ mod tests {
             )
         );
         let gitignore = fs::read_to_string(root.join(".gitignore")).expect("read gitignore");
-        assert!(gitignore.contains(".claw/settings.local.json"));
-        assert!(gitignore.contains(".claw/sessions/"));
-        let claw_md = fs::read_to_string(root.join("CLAW.md")).expect("read claw md");
-        assert!(claw_md.contains("Languages: Rust."));
-        assert!(claw_md.contains("cargo clippy --workspace --all-targets -- -D warnings"));
+        assert!(gitignore.contains(".cody/settings.local.json"));
+        assert!(gitignore.contains(".cody/sessions/"));
+        let cody_md = fs::read_to_string(root.join("CODY.md")).expect("read cody md");
+        assert!(cody_md.contains("Languages: Rust."));
+        assert!(cody_md.contains("cargo clippy --workspace --all-targets -- -D warnings"));
 
         fs::remove_dir_all(root).expect("cleanup temp dir");
     }
@@ -385,26 +385,26 @@ mod tests {
     fn initialize_repo_is_idempotent_and_preserves_existing_files() {
         let root = temp_dir();
         fs::create_dir_all(&root).expect("create root");
-        fs::write(root.join("CLAW.md"), "custom guidance\n").expect("write existing claw md");
-        fs::write(root.join(".gitignore"), ".claw/settings.local.json\n").expect("write gitignore");
+        fs::write(root.join("CODY.md"), "custom guidance\n").expect("write existing cody md");
+        fs::write(root.join(".gitignore"), ".cody/settings.local.json\n").expect("write gitignore");
 
         let first = initialize_repo(&root).expect("first init should succeed");
         assert!(first
             .render()
-            .contains("CLAW.md          skipped (already exists)"));
+            .contains("CODY.md          skipped (already exists)"));
         let second = initialize_repo(&root).expect("second init should succeed");
         let second_rendered = second.render();
-        assert!(second_rendered.contains(".claw/           skipped (already exists)"));
-        assert!(second_rendered.contains(".claw.json       skipped (already exists)"));
+        assert!(second_rendered.contains(".cody/           skipped (already exists)"));
+        assert!(second_rendered.contains(".cody.json       skipped (already exists)"));
         assert!(second_rendered.contains(".gitignore       skipped (already exists)"));
-        assert!(second_rendered.contains("CLAW.md          skipped (already exists)"));
+        assert!(second_rendered.contains("CODY.md          skipped (already exists)"));
         assert_eq!(
-            fs::read_to_string(root.join("CLAW.md")).expect("read existing claw md"),
+            fs::read_to_string(root.join("CODY.md")).expect("read existing cody md"),
             "custom guidance\n"
         );
         let gitignore = fs::read_to_string(root.join(".gitignore")).expect("read gitignore");
-        assert_eq!(gitignore.matches(".claw/settings.local.json").count(), 1);
-        assert_eq!(gitignore.matches(".claw/sessions/").count(), 1);
+        assert_eq!(gitignore.matches(".cody/settings.local.json").count(), 1);
+        assert_eq!(gitignore.matches(".cody/sessions/").count(), 1);
 
         fs::remove_dir_all(root).expect("cleanup temp dir");
     }
@@ -421,7 +421,7 @@ mod tests {
         )
         .expect("write package json");
 
-        let rendered = render_init_claw_md(Path::new(&root));
+        let rendered = render_init_cody_md(Path::new(&root));
         assert!(rendered.contains("Languages: Python, TypeScript."));
         assert!(rendered.contains("Frameworks/tooling markers: Next.js, React."));
         assert!(rendered.contains("pyproject.toml"));

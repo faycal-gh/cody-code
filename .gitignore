@@ -1,11 +1,15 @@
 __pycache__/
 archive/
 .omx/
+.cody/
+.cody-agents/
 .claw/
 .claw-agents/
 .sandbox-home/
 .sandbox-tmp/
 target/
+**/.cody/
+**/.cody-agents/
 **/.claw/
 **/.claw-agents/
 **/.sandbox-home/

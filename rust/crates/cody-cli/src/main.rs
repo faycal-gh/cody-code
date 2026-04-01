@@ -16,7 +16,7 @@ use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use api::{
-    resolve_startup_auth_source, AuthSource, ClawApiClient, ContentBlockDelta, InputContentBlock,
+    resolve_startup_auth_source, AuthSource, CodyApiClient, ContentBlockDelta, InputContentBlock,
     InputMessage, MessageRequest, MessageResponse, OutputContentBlock, ProviderClient,
     StreamEvent as ApiStreamEvent, ToolChoice, ToolDefinition, ToolResultContentBlock,
 };
@@ -185,7 +185,7 @@ fn main() {
         eprintln!(
             "error: {error}
 
-Run `claw --help` for usage."
+Run `cody --help` for usage."
         );
         std::process::exit(1);
     }
@@ -348,7 +348,7 @@ fn parse_args_with_defaults(args: &[String], defaults: &CliDefaults) -> Result<C
         .clone()
         .unwrap_or_else(|| DEFAULT_MODEL.to_string());
     let mut output_format = CliOutputFormat::Text;
-    let mut permission_mode = env::var("CLAW_PERMISSION_MODE")
+    let mut permission_mode = env::var("CODY_PERMISSION_MODE")
         .ok()
         .as_deref()
         .and_then(normalize_permission_mode)
@@ -416,7 +416,7 @@ fn parse_args_with_defaults(args: &[String], defaults: &CliDefaults) -> Result<C
                 index += 1;
             }
             "-p" => {
-                // Claw Code compat: -p "prompt" = one-shot prompt
+                // Cody Code compat: -p "prompt" = one-shot prompt
                 let prompt = args[index + 1..].join(" ");
                 if prompt.trim().is_empty() {
                     return Err("-p requires a prompt string".to_string());
@@ -431,7 +431,7 @@ fn parse_args_with_defaults(args: &[String], defaults: &CliDefaults) -> Result<C
                 });
             }
             "--print" => {
-                // Claw Code compat: --print makes output non-interactive
+                // Cody Code compat: --print makes output non-interactive
                 output_format = CliOutputFormat::Text;
                 index += 1;
             }
@@ -591,7 +591,7 @@ fn permission_mode_from_label(mode: &str) -> PermissionMode {
 }
 
 fn default_permission_mode() -> PermissionMode {
-    env::var("CLAW_PERMISSION_MODE")
+    env::var("CODY_PERMISSION_MODE")
         .ok()
         .as_deref()
         .and_then(normalize_permission_mode)
@@ -639,7 +639,7 @@ fn provider_display_info(
 
 fn offline_provider_display_info() -> ProviderDisplayInfo {
     ProviderDisplayInfo {
-        provider_kind: api::ProviderKind::ClawApi,
+        provider_kind: api::ProviderKind::CodyApi,
         provider_label: "offline",
         auth_env: "n/a",
         auth_hint: "n/a".to_string(),
@@ -651,8 +651,8 @@ fn offline_provider_display_info() -> ProviderDisplayInfo {
 
 fn fallback_provider_metadata(provider_kind: api::ProviderKind) -> api::ProviderMetadata {
     match provider_kind {
-        api::ProviderKind::ClawApi => api::ProviderMetadata {
-            provider: api::ProviderKind::ClawApi,
+        api::ProviderKind::CodyApi => api::ProviderMetadata {
+            provider: api::ProviderKind::CodyApi,
             auth_env: "ANTHROPIC_API_KEY",
             base_url_env: "ANTHROPIC_BASE_URL",
             default_base_url: "https://api.anthropic.com",
@@ -677,7 +677,7 @@ fn configured_base_url_for_metadata(
     metadata: api::ProviderMetadata,
 ) -> Option<(&str, &'static str)> {
     match (metadata.provider, metadata.auth_env) {
-        (api::ProviderKind::ClawApi, _) => runtime_config
+        (api::ProviderKind::CodyApi, _) => runtime_config
             .providers()
             .anthropic()
             .base_url()
@@ -733,7 +733,7 @@ fn configured_base_url_for_metadata(
 
 fn provider_label_for_metadata(metadata: api::ProviderMetadata) -> &'static str {
     match (metadata.provider, metadata.auth_env) {
-        (api::ProviderKind::ClawApi, _) => "Anthropic-compatible",
+        (api::ProviderKind::CodyApi, _) => "Anthropic-compatible",
         (api::ProviderKind::Xai, _) => "xAI",
         (api::ProviderKind::OpenAi, "GEMINI_API_KEY") => "Google Gemini",
         (api::ProviderKind::OpenAi, "GROQ_API_KEY") => "Groq",
@@ -744,7 +744,7 @@ fn provider_label_for_metadata(metadata: api::ProviderMetadata) -> &'static str 
 
 fn auth_hint_for_metadata(metadata: api::ProviderMetadata) -> &'static str {
     match (metadata.provider, metadata.auth_env) {
-        (api::ProviderKind::ClawApi, _) => "ANTHROPIC_API_KEY | ANTHROPIC_AUTH_TOKEN | OAuth",
+        (api::ProviderKind::CodyApi, _) => "ANTHROPIC_API_KEY | ANTHROPIC_AUTH_TOKEN | OAuth",
         (api::ProviderKind::Xai, _) => "XAI_API_KEY",
         (api::ProviderKind::OpenAi, "GEMINI_API_KEY") => "GEMINI_API_KEY",
         (api::ProviderKind::OpenAi, "GROQ_API_KEY") => "GROQ_API_KEY",
@@ -829,7 +829,7 @@ fn dump_manifests() {
 }
 
 fn print_bootstrap_plan() {
-    for phase in runtime::BootstrapPlan::claw_default().phases() {
+    for phase in runtime::BootstrapPlan::cody_default().phases() {
         println!("- {phase:?}");
     }
 }
@@ -837,14 +837,14 @@ fn print_bootstrap_plan() {
 fn default_oauth_config() -> OAuthConfig {
     OAuthConfig {
         client_id: String::from("9d1c250a-e61b-44d9-88ed-5944d1962f5e"),
-        authorize_url: String::from("https://platform.claw.dev/oauth/authorize"),
-        token_url: String::from("https://platform.claw.dev/v1/oauth/token"),
+        authorize_url: String::from("https://platform.cody.dev/oauth/authorize"),
+        token_url: String::from("https://platform.cody.dev/v1/oauth/token"),
         callback_port: None,
         manual_redirect_url: None,
         scopes: vec![
             String::from("user:profile"),
             String::from("user:inference"),
-            String::from("user:sessions:claw_code"),
+            String::from("user:sessions:cody_code"),
         ],
     }
 }
@@ -862,7 +862,7 @@ fn run_login() -> Result<(), Box<dyn std::error::Error>> {
         OAuthAuthorizationRequest::from_config(oauth, redirect_uri.clone(), state.clone(), &pkce)
             .build_url();
 
-    println!("Starting Claw OAuth login...");
+    println!("Starting Cody OAuth login...");
     println!("Listening for callback on {redirect_uri}");
     if let Err(error) = open_browser(&authorize_url) {
         eprintln!("warning: failed to open browser automatically: {error}");
@@ -886,7 +886,7 @@ fn run_login() -> Result<(), Box<dyn std::error::Error>> {
         return Err(io::Error::new(io::ErrorKind::InvalidData, "oauth state mismatch").into());
     }
 
-    let client = ClawApiClient::from_auth(AuthSource::None).with_base_url(api::read_base_url());
+    let client = CodyApiClient::from_auth(AuthSource::None).with_base_url(api::read_base_url());
     let exchange_request =
         OAuthTokenExchangeRequest::from_config(oauth, code, state, pkce.verifier, redirect_uri);
     let runtime = tokio::runtime::Runtime::new()?;
@@ -897,13 +897,13 @@ fn run_login() -> Result<(), Box<dyn std::error::Error>> {
         expires_at: token_set.expires_at,
         scopes: token_set.scopes,
     })?;
-    println!("Claw OAuth login complete.");
+    println!("Cody OAuth login complete.");
     Ok(())
 }
 
 fn run_logout() -> Result<(), Box<dyn std::error::Error>> {
     clear_oauth_credentials()?;
-    println!("Claw OAuth credentials cleared.");
+    println!("Cody OAuth credentials cleared.");
     Ok(())
 }
 
@@ -948,9 +948,9 @@ fn wait_for_oauth_callback(
     let callback = parse_oauth_callback_request_target(target)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     let body = if callback.error.is_some() {
-        "Claw OAuth login failed. You can close this window."
+        "Cody OAuth login failed. You can close this window."
     } else {
-        "Claw OAuth login succeeded. You can close this window."
+        "Cody OAuth login succeeded. You can close this window."
     };
     let response = format!(
         "HTTP/1.1 200 OK\r\ncontent-type: text/plain; charset=utf-8\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",
@@ -1293,7 +1293,7 @@ fn run_resume_command(
         }),
         SlashCommand::Init => Ok(ResumeCommandOutcome {
             session: session.clone(),
-            message: Some(init_claw_md()?),
+            message: Some(init_cody_md()?),
         }),
         SlashCommand::Diff => Ok(ResumeCommandOutcome {
             session: session.clone(),
@@ -1510,7 +1510,7 @@ fn managed_provider_for_model(model: &str) -> ManagedProviderTarget {
     }
 
     match api::detect_provider_kind(model) {
-        api::ProviderKind::ClawApi => ManagedProviderTarget::Anthropic,
+        api::ProviderKind::CodyApi => ManagedProviderTarget::Anthropic,
         api::ProviderKind::OpenAi => ManagedProviderTarget::OpenAi,
         api::ProviderKind::Xai => ManagedProviderTarget::Xai,
     }
@@ -1532,7 +1532,7 @@ fn managed_provider_from_input(value: &str) -> Option<ManagedProviderTarget> {
 
 fn local_settings_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
     Ok(env::current_dir()?
-        .join(".claw")
+        .join(".cody")
         .join("settings.local.json"))
 }
 
@@ -1800,7 +1800,7 @@ impl LiveCli {
             |info| format!("{} ({})", info.effective_base_url, info.base_url_source),
         );
         return format!(
-            "\x1b[1;38;5;45mClaw Code\x1b[0m\n\
+            "\x1b[1;38;5;45mCody Code\x1b[0m\n\
   \x1b[2mModel\x1b[0m            {}\n\
   \x1b[2mProvider\x1b[0m         {}\n\
   \x1b[2mBase URL\x1b[0m         {}\n\
@@ -1860,7 +1860,7 @@ impl LiveCli {
 
         let mut right = vec!["\x1b[1;38;5;173mTips for getting started\x1b[0m".to_string()];
         right.extend(wrap_display(
-            "Run /init to create a CLAW.md file with project instructions. Use /models to switch models and manage API keys, /config providers to inspect endpoints, and /help for the full command list.",
+            "Run /init to create a CODY.md file with project instructions. Use /models to switch models and manage API keys, /config providers to inspect endpoints, and /help for the full command list.",
             right_width,
         ));
         right.push(String::new());
@@ -1887,7 +1887,7 @@ impl LiveCli {
         left.resize(row_count, String::new());
         right.resize(row_count, String::new());
 
-        let header_label = format!(" Claw Code v{VERSION} ");
+        let header_label = format!(" Cody Code v{VERSION} ");
         let header_rule = 2 + left_width + 3 + right_width + 2;
         let mut lines = vec![format!(
             "\x1b[1;38;5;173m{}{}\x1b[0m",
@@ -2704,7 +2704,7 @@ impl LiveCli {
             return Err("generated commit message was empty".into());
         }
 
-        let path = write_temp_text_file("claw-commit-message.txt", &message)?;
+        let path = write_temp_text_file("cody-commit-message.txt", &message)?;
         let output = Command::new("git")
             .args(["commit", "--file"])
             .arg(&path)
@@ -2735,7 +2735,7 @@ impl LiveCli {
             .ok_or_else(|| "failed to parse generated PR title/body".to_string())?;
 
         if command_exists("gh") {
-            let body_path = write_temp_text_file("claw-pr-body.md", &body)?;
+            let body_path = write_temp_text_file("cody-pr-body.md", &body)?;
             let output = Command::new("gh")
                 .args(["pr", "create", "--title", &title, "--body-file"])
                 .arg(&body_path)
@@ -2766,7 +2766,7 @@ impl LiveCli {
             .ok_or_else(|| "failed to parse generated issue title/body".to_string())?;
 
         if command_exists("gh") {
-            let body_path = write_temp_text_file("claw-issue-body.md", &body)?;
+            let body_path = write_temp_text_file("cody-issue-body.md", &body)?;
             let output = Command::new("gh")
                 .args(["issue", "create", "--title", &title, "--body-file"])
                 .arg(&body_path)
@@ -2789,7 +2789,7 @@ impl LiveCli {
 
 fn sessions_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
     let cwd = env::current_dir()?;
-    let path = cwd.join(".claw").join("sessions");
+    let path = cwd.join(".cody").join("sessions");
     fs::create_dir_all(&path)?;
     Ok(path)
 }
@@ -3087,7 +3087,7 @@ fn render_memory_report() -> Result<String, Box<dyn std::error::Error>> {
     if project_context.instruction_files.is_empty() {
         lines.push("Discovered files".to_string());
         lines.push(
-            "  No CLAW instruction files discovered in the current directory ancestry.".to_string(),
+            "  No CODY instruction files discovered in the current directory ancestry.".to_string(),
         );
     } else {
         lines.push("Discovered files".to_string());
@@ -3112,13 +3112,13 @@ fn render_memory_report() -> Result<String, Box<dyn std::error::Error>> {
     ))
 }
 
-fn init_claw_md() -> Result<String, Box<dyn std::error::Error>> {
+fn init_cody_md() -> Result<String, Box<dyn std::error::Error>> {
     let cwd = env::current_dir()?;
     Ok(initialize_repo(&cwd)?.render())
 }
 
 fn run_init() -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", init_claw_md()?);
+    println!("{}", init_cody_md()?);
     Ok(())
 }
 
@@ -3354,7 +3354,7 @@ fn render_version_report() -> String {
     let git_sha = GIT_SHA.unwrap_or("unknown");
     let target = BUILD_TARGET.unwrap_or("unknown");
     format!(
-        "Claw Code\n  Version          {VERSION}\n  Git SHA          {git_sha}\n  Target           {target}\n  Build date       {DEFAULT_DATE}"
+        "Cody Code\n  Version          {VERSION}\n  Git SHA          {git_sha}\n  Target           {target}\n  Build date       {DEFAULT_DATE}"
     )
 }
 
@@ -3951,8 +3951,8 @@ impl DefaultRuntimeClient {
     ) -> Result<ProviderClient, Box<dyn std::error::Error>> {
         let provider = provider_display_info(model, base_url_override)?;
         let client = match provider.provider_kind {
-            api::ProviderKind::ClawApi => ProviderClient::ClawApi(
-                ClawApiClient::from_auth(resolve_cli_auth_source()?)
+            api::ProviderKind::CodyApi => ProviderClient::CodyApi(
+                CodyApiClient::from_auth(resolve_cli_auth_source()?)
                     .with_base_url(provider.effective_base_url.clone()),
             ),
             api::ProviderKind::Xai => ProviderClient::Xai(
@@ -4850,40 +4850,40 @@ fn convert_messages(messages: &[ConversationMessage]) -> Vec<InputMessage> {
 }
 
 fn print_help_to(out: &mut impl Write) -> io::Result<()> {
-    writeln!(out, "claw v{VERSION}")?;
+    writeln!(out, "cody v{VERSION}")?;
     writeln!(out)?;
     writeln!(out, "Usage:")?;
     writeln!(
         out,
-        "  claw [--model MODEL] [--base-url URL] [--allowedTools TOOL[,TOOL...]]"
+        "  cody [--model MODEL] [--base-url URL] [--allowedTools TOOL[,TOOL...]]"
     )?;
     writeln!(out, "      Start the interactive REPL")?;
     writeln!(
         out,
-        "  claw [--model MODEL] [--base-url URL] [--output-format text|json] prompt TEXT"
+        "  cody [--model MODEL] [--base-url URL] [--output-format text|json] prompt TEXT"
     )?;
     writeln!(out, "      Send one prompt and exit")?;
     writeln!(
         out,
-        "  claw [--model MODEL] [--base-url URL] [--output-format text|json] TEXT"
+        "  cody [--model MODEL] [--base-url URL] [--output-format text|json] TEXT"
     )?;
     writeln!(out, "      Shorthand non-interactive prompt mode")?;
     writeln!(
         out,
-        "  claw --resume SESSION.json [/status] [/compact] [...]"
+        "  cody --resume SESSION.json [/status] [/compact] [...]"
     )?;
     writeln!(
         out,
         "      Inspect or maintain a saved session without entering the REPL"
     )?;
-    writeln!(out, "  claw dump-manifests")?;
-    writeln!(out, "  claw bootstrap-plan")?;
-    writeln!(out, "  claw agents")?;
-    writeln!(out, "  claw skills")?;
-    writeln!(out, "  claw system-prompt [--cwd PATH] [--date YYYY-MM-DD]")?;
-    writeln!(out, "  claw login")?;
-    writeln!(out, "  claw logout")?;
-    writeln!(out, "  claw init")?;
+    writeln!(out, "  cody dump-manifests")?;
+    writeln!(out, "  cody bootstrap-plan")?;
+    writeln!(out, "  cody agents")?;
+    writeln!(out, "  cody skills")?;
+    writeln!(out, "  cody system-prompt [--cwd PATH] [--date YYYY-MM-DD]")?;
+    writeln!(out, "  cody login")?;
+    writeln!(out, "  cody logout")?;
+    writeln!(out, "  cody init")?;
     writeln!(out)?;
     writeln!(out, "Flags:")?;
     writeln!(
@@ -4925,27 +4925,27 @@ fn print_help_to(out: &mut impl Write) -> io::Result<()> {
         .join(", ");
     writeln!(out, "Resume-safe commands: {resume_commands}")?;
     writeln!(out, "Examples:")?;
-    writeln!(out, "  claw --model opus \"summarize this repo\"")?;
+    writeln!(out, "  cody --model opus \"summarize this repo\"")?;
     writeln!(
         out,
-        "  claw --model Qwen/Qwen2.5-Coder-32B-Instruct --base-url https://router.huggingface.co/v1"
+        "  cody --model Qwen/Qwen2.5-Coder-32B-Instruct --base-url https://router.huggingface.co/v1"
     )?;
     writeln!(
         out,
-        "  claw --output-format json prompt \"explain src/main.rs\""
+        "  cody --output-format json prompt \"explain src/main.rs\""
     )?;
     writeln!(
         out,
-        "  claw --allowedTools read,glob \"summarize Cargo.toml\""
+        "  cody --allowedTools read,glob \"summarize Cargo.toml\""
     )?;
     writeln!(
         out,
-        "  claw --resume session.json /status /diff /export notes.txt"
+        "  cody --resume session.json /status /diff /export notes.txt"
     )?;
-    writeln!(out, "  claw agents")?;
-    writeln!(out, "  claw /skills")?;
-    writeln!(out, "  claw login")?;
-    writeln!(out, "  claw init")?;
+    writeln!(out, "  cody agents")?;
+    writeln!(out, "  cody /skills")?;
+    writeln!(out, "  cody login")?;
+    writeln!(out, "  cody init")?;
     Ok(())
 }
 
@@ -5431,10 +5431,10 @@ mod tests {
         let mut help = Vec::new();
         print_help_to(&mut help).expect("help should render");
         let help = String::from_utf8(help).expect("help should be utf8");
-        assert!(help.contains("claw init"));
-        assert!(help.contains("claw agents"));
-        assert!(help.contains("claw skills"));
-        assert!(help.contains("claw /skills"));
+        assert!(help.contains("cody init"));
+        assert!(help.contains("cody agents"));
+        assert!(help.contains("cody skills"));
+        assert!(help.contains("cody /skills"));
     }
 
     #[test]
@@ -5442,7 +5442,7 @@ mod tests {
         let report = format_model_report(
             "sonnet",
             &super::ProviderDisplayInfo {
-                provider_kind: api::ProviderKind::ClawApi,
+                provider_kind: api::ProviderKind::CodyApi,
                 provider_label: "Anthropic-compatible",
                 auth_env: "ANTHROPIC_API_KEY",
                 auth_hint: "ANTHROPIC_API_KEY".to_string(),
@@ -5503,7 +5503,7 @@ mod tests {
         let status = format_status_report(
             "sonnet",
             &super::ProviderDisplayInfo {
-                provider_kind: api::ProviderKind::ClawApi,
+                provider_kind: api::ProviderKind::CodyApi,
                 provider_label: "Anthropic-compatible",
                 auth_env: "ANTHROPIC_API_KEY",
                 auth_hint: "ANTHROPIC_API_KEY".to_string(),
@@ -5655,8 +5655,8 @@ mod tests {
 
     #[test]
     fn init_template_mentions_detected_rust_workspace() {
-        let rendered = crate::init::render_init_claw_md(std::path::Path::new("."));
-        assert!(rendered.contains("# CLAW.md"));
+        let rendered = crate::init::render_init_cody_md(std::path::Path::new("."));
+        assert!(rendered.contains("# CODY.md"));
         assert!(rendered.contains("cargo clippy --workspace --all-targets -- -D warnings"));
     }
 
@@ -5804,7 +5804,7 @@ mod tests {
             task_label: "ship plugin progress".to_string(),
             step: 3,
             phase: "running read_file".to_string(),
-            detail: Some("reading rust/crates/claw-cli/src/main.rs".to_string()),
+            detail: Some("reading rust/crates/cody-cli/src/main.rs".to_string()),
             saw_final_text: false,
         };
 
@@ -5851,8 +5851,8 @@ mod tests {
             "reading src/main.rs"
         );
         assert!(
-            describe_tool_progress("bash", r#"{"command":"cargo test -p claw-cli"}"#)
-                .contains("cargo test -p claw-cli")
+            describe_tool_progress("bash", r#"{"command":"cargo test -p cody-cli"}"#)
+                .contains("cargo test -p cody-cli")
         );
         assert_eq!(
             describe_tool_progress("grep_search", r#"{"pattern":"ultraplan","path":"rust"}"#),

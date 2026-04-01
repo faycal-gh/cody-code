@@ -1,6 +1,6 @@
-# Claw Code
+# Cody Code
 
-This repository contains a working Rust CLI for `claw`.
+This repository contains a working Rust CLI for `cody`.
 
 ## Attribution
 
@@ -19,13 +19,13 @@ The repository was then modified, cleaned up, and extended independently for per
 ```bash
 cd rust
 cargo build --release
-./target/release/claw
+./target/release/cody
 ```
 
-If `claw` is not on your `PATH`, run the binary directly from `rust/target/debug/` or `rust/target/release/`, or use:
+If `cody` is not on your `PATH`, run the binary directly from `rust/target/debug/` or `rust/target/release/`, or use:
 
 ```bash
-cargo run -p claw-cli --bin claw
+cargo run -p cody-cli --bin cody
 ```
 
 ## Notes

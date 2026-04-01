@@ -20,7 +20,7 @@ async fn send_message_posts_json_and_parses_response() {
         "\"id\":\"msg_test\",",
         "\"type\":\"message\",",
         "\"role\":\"assistant\",",
-        "\"content\":[{\"type\":\"text\",\"text\":\"Hello from Claw\"}],",
+        "\"content\":[{\"type\":\"text\",\"text\":\"Hello from Cody\"}],",
         "\"model\":\"claude-sonnet-4-6\",",
         "\"stop_reason\":\"end_turn\",",
         "\"stop_sequence\":null,",
@@ -48,7 +48,7 @@ async fn send_message_posts_json_and_parses_response() {
     assert_eq!(
         response.content,
         vec![OutputContentBlock::Text {
-            text: "Hello from Claw".to_string(),
+            text: "Hello from Cody".to_string(),
         }]
     );
 
@@ -214,8 +214,8 @@ async fn provider_client_dispatches_api_requests() {
     )
     .expect("api provider client should be constructed");
     let client = match client {
-        ProviderClient::ClawApi(client) => {
-            ProviderClient::ClawApi(client.with_base_url(server.base_url()))
+        ProviderClient::CodyApi(client) => {
+            ProviderClient::CodyApi(client.with_base_url(server.base_url()))
         }
         other => panic!("expected default provider, got {other:?}"),
     };
@@ -290,7 +290,7 @@ async fn live_stream_smoke_test() {
     let client = ApiClient::from_env().expect("ANTHROPIC_API_KEY must be set");
     let mut stream = client
         .stream_message(&MessageRequest {
-            model: std::env::var("CLAW_MODEL").unwrap_or_else(|_| "claude-sonnet-4-6".to_string()),
+            model: std::env::var("CODY_MODEL").unwrap_or_else(|_| "claude-sonnet-4-6".to_string()),
             max_tokens: 32,
             messages: vec![InputMessage::user_text(
                 "Reply with exactly: hello from rust",

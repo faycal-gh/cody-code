@@ -1,5 +1,7 @@
 target/
 .omx/
+.cody/
+.cody-agents/
 .claw/
 .claw-agents/
 .sandbox-home/

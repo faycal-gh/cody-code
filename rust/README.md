@@ -1,6 +1,6 @@
-# Claw Code - Rust Implementation
+# Cody Code - Rust Implementation
 
-A high-performance Rust rewrite of the Claw Code CLI agent harness. Built for speed, safety, and native tool execution.
+A high-performance Rust rewrite of the Cody Code CLI agent harness. Built for speed, safety, and native tool execution.
 
 This Rust workspace is part of a repository that began from a clone of:
 
@@ -16,13 +16,13 @@ cd rust/
 cargo build --release
 
 # Run interactive REPL
-./target/release/claw
+./target/release/cody
 
 # One-shot prompt
-./target/release/claw prompt "explain this codebase"
+./target/release/cody prompt "explain this codebase"
 
 # With specific model
-./target/release/claw --model sonnet prompt "fix the bug in main.rs"
+./target/release/cody --model sonnet prompt "fix the bug in main.rs"
 ```
 
 ## Configuration
@@ -54,8 +54,8 @@ export GEMINI_API_KEY="AIza..."
 export HF_TOKEN="hf_..."
 ```
 
-You can persist provider defaults in `.claw/settings.json` or
-`.claw/settings.local.json`:
+You can persist provider defaults in `.cody/settings.json` or
+`.cody/settings.local.json`:
 
 ```json
 {
@@ -76,24 +76,24 @@ Examples:
 ```bash
 # Groq GPT OSS
 export GROQ_API_KEY="gsk-..."
-./target/release/claw --model openai/gpt-oss-120b --base-url https://api.groq.com/openai/v1
+./target/release/cody --model openai/gpt-oss-120b --base-url https://api.groq.com/openai/v1
 
 # Groq GPT OSS 20B
-./target/release/claw --model openai/gpt-oss-20b --base-url https://api.groq.com/openai/v1
+./target/release/cody --model openai/gpt-oss-20b --base-url https://api.groq.com/openai/v1
 
 # Gemini Flash via Google's OpenAI-compatible endpoint
 export GEMINI_API_KEY="AIza..."
-./target/release/claw --model gemini-3-flash-preview --base-url https://generativelanguage.googleapis.com/v1beta/openai
+./target/release/cody --model gemini-3-flash-preview --base-url https://generativelanguage.googleapis.com/v1beta/openai
 
 # Hugging Face router
 export HF_TOKEN="hf_..."
-./target/release/claw --model Qwen/Qwen2.5-Coder-32B-Instruct --base-url https://router.huggingface.co/v1
+./target/release/cody --model Qwen/Qwen2.5-Coder-32B-Instruct --base-url https://router.huggingface.co/v1
 ```
 
 Or authenticate via OAuth:
 
 ```bash
-claw login
+cody login
 ```
 
 ## Features
@@ -108,8 +108,8 @@ claw login
 | Sub-agent orchestration | ✅ |
 | Todo tracking | ✅ |
 | Notebook editing | ✅ |
-| CLAW.md / project memory | ✅ |
-| Config file hierarchy (.claw.json) | ✅ |
+| CODY.md / project memory | ✅ |
+| Config file hierarchy (.cody.json) | ✅ |
 | Permission system | ✅ |
 | MCP server lifecycle | ✅ |
 | Session persistence + resume | ✅ |
@@ -136,7 +136,7 @@ Short names resolve to the latest model versions:
 ## CLI Flags
 
 ```
-claw [OPTIONS] [COMMAND]
+cody [OPTIONS] [COMMAND]
 
 Options:
   --model MODEL                    Set the model (alias or full name)
@@ -169,7 +169,7 @@ Commands:
 | `/models` | Manage models, API keys, and base URLs |
 | `/permissions` | Show or switch permission mode |
 | `/config [section]` | Show config (env, hooks, model, plugins, providers) |
-| `/memory` | Show CLAW.md contents |
+| `/memory` | Show CODY.md contents |
 | `/diff` | Show git diff |
 | `/export [path]` | Export conversation |
 | `/session [id]` | Resume a previous session |
@@ -186,7 +186,7 @@ rust/
     ├── commands/           # Shared slash-command registry
     ├── compat-harness/     # TS manifest extraction harness
     ├── runtime/            # Session, config, permissions, MCP, prompts
-    ├── claw-cli/   # Main CLI binary (`claw`)
+    ├── cody-cli/   # Main CLI binary (`cody`)
     └── tools/              # Built-in tool implementations
 ```
 
@@ -196,14 +196,14 @@ rust/
 - **commands** — Slash command definitions and help text generation
 - **compat-harness** — Compatibility and manifest extraction utilities used by this workspace
 - **runtime** — `ConversationRuntime` agentic loop, `ConfigLoader` hierarchy, `Session` persistence, permission policy, MCP client, system prompt assembly, usage tracking
-- **claw-cli** — REPL, one-shot prompt, streaming display, tool call rendering, CLI argument parsing
+- **cody-cli** — REPL, one-shot prompt, streaming display, tool call rendering, CLI argument parsing
 - **tools** — Tool specs + execution: Bash, ReadFile, WriteFile, EditFile, GlobSearch, GrepSearch, WebSearch, WebFetch, Agent, TodoWrite, NotebookEdit, Skill, ToolSearch, REPL runtimes
 
 ## Stats
 
 - **~20K lines** of Rust
 - **6 crates** in workspace
-- **Binary name:** `claw`
+- **Binary name:** `cody`
 - **Default model:** `claude-opus-4-6`
 - **Default permissions:** `danger-full-access`
 

@@ -309,7 +309,7 @@ mod tests {
     }
 
     fn write_hook_plugin(root: &Path, name: &str, pre_message: &str, post_message: &str) {
-        fs::create_dir_all(root.join(".claw-plugin")).expect("manifest dir");
+        fs::create_dir_all(root.join(".cody-plugin")).expect("manifest dir");
         fs::create_dir_all(root.join("hooks")).expect("hooks dir");
         #[cfg(windows)]
         let (pre_hook_path, pre_hook_contents, post_hook_path, post_hook_contents) = (
@@ -336,7 +336,7 @@ mod tests {
         )
         .expect("write post hook");
         fs::write(
-            root.join(".claw-plugin").join("plugin.json"),
+            root.join(".cody-plugin").join("plugin.json"),
             format!(
                 "{{\n  \"name\": \"{name}\",\n  \"version\": \"1.0.0\",\n  \"description\": \"hook plugin\",\n  \"hooks\": {{\n    \"PreToolUse\": [\"{pre_hook_path}\"],\n    \"PostToolUse\": [\"{post_hook_path}\"]\n  }}\n}}"
             ),

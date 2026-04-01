@@ -115,21 +115,21 @@ const SLASH_COMMAND_SPECS: &[SlashCommandSpec] = &[
     SlashCommandSpec {
         name: "config",
         aliases: &[],
-        summary: "Inspect Claw config files or merged sections",
+        summary: "Inspect Cody config files or merged sections",
         argument_hint: Some("[env|hooks|model|plugins|providers]"),
         resume_supported: true,
     },
     SlashCommandSpec {
         name: "memory",
         aliases: &[],
-        summary: "Inspect loaded Claw instruction memory files",
+        summary: "Inspect loaded Cody instruction memory files",
         argument_hint: None,
         resume_supported: true,
     },
     SlashCommandSpec {
         name: "init",
         aliases: &[],
-        summary: "Create a starter CLAW.md for this repo",
+        summary: "Create a starter CODY.md for this repo",
         argument_hint: None,
         resume_supported: true,
     },
@@ -234,7 +234,7 @@ const SLASH_COMMAND_SPECS: &[SlashCommandSpec] = &[
     SlashCommandSpec {
         name: "plugin",
         aliases: &["plugins", "marketplace"],
-        summary: "Manage Claw Code plugins",
+        summary: "Manage Cody Code plugins",
         argument_hint: Some(
             "[list|install <path>|enable <name>|disable <name>|uninstall <id>|update <id>]",
         ),
@@ -497,20 +497,20 @@ pub struct PluginsCommandResult {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum DefinitionSource {
     ProjectCodex,
-    ProjectClaw,
+    ProjectCody,
     UserCodexHome,
     UserCodex,
-    UserClaw,
+    UserCody,
 }
 
 impl DefinitionSource {
     fn label(self) -> &'static str {
         match self {
             Self::ProjectCodex => "Project (.codex)",
-            Self::ProjectClaw => "Project (.claw)",
+            Self::ProjectCody => "Project (.cody)",
             Self::UserCodexHome => "User ($CODEX_HOME)",
             Self::UserCodex => "User (~/.codex)",
-            Self::UserClaw => "User (~/.claw)",
+            Self::UserCody => "User (~/.cody)",
         }
     }
 }
@@ -809,7 +809,7 @@ pub fn handle_commit_slash_command(message: &str, cwd: &Path) -> io::Result<Stri
     }
 
     git_status_ok(cwd, &["add", "-A"])?;
-    let path = write_temp_text_file("claw-commit-message", "txt", message)?;
+    let path = write_temp_text_file("cody-commit-message", "txt", message)?;
     let path_string = path.to_string_lossy().into_owned();
     git_status_ok(cwd, &["commit", "--file", path_string.as_str()])?;
 
@@ -868,7 +868,7 @@ pub fn handle_commit_push_pr_slash_command(
 
     git_status_ok(cwd, &["push", "--set-upstream", "origin", branch.as_str()])?;
 
-    let body_path = write_temp_text_file("claw-pr-body", "md", request.pr_body.trim())?;
+    let body_path = write_temp_text_file("cody-pr-body", "md", request.pr_body.trim())?;
     let body_path_string = body_path.to_string_lossy().into_owned();
     let create = Command::new("gh")
         .args([
@@ -1141,8 +1141,8 @@ fn discover_definition_roots(cwd: &Path, leaf: &str) -> Vec<(DefinitionSource, P
         );
         push_unique_root(
             &mut roots,
-            DefinitionSource::ProjectClaw,
-            ancestor.join(".claw").join(leaf),
+            DefinitionSource::ProjectCody,
+            ancestor.join(".cody").join(leaf),
         );
     }
 
@@ -1163,8 +1163,8 @@ fn discover_definition_roots(cwd: &Path, leaf: &str) -> Vec<(DefinitionSource, P
         );
         push_unique_root(
             &mut roots,
-            DefinitionSource::UserClaw,
-            home.join(".claw").join(leaf),
+            DefinitionSource::UserCody,
+            home.join(".cody").join(leaf),
         );
     }
 
@@ -1183,8 +1183,8 @@ fn discover_skill_roots(cwd: &Path) -> Vec<SkillRoot> {
         );
         push_unique_skill_root(
             &mut roots,
-            DefinitionSource::ProjectClaw,
-            ancestor.join(".claw").join("skills"),
+            DefinitionSource::ProjectCody,
+            ancestor.join(".cody").join("skills"),
             SkillOrigin::SkillsDir,
         );
         push_unique_skill_root(
@@ -1195,8 +1195,8 @@ fn discover_skill_roots(cwd: &Path) -> Vec<SkillRoot> {
         );
         push_unique_skill_root(
             &mut roots,
-            DefinitionSource::ProjectClaw,
-            ancestor.join(".claw").join("commands"),
+            DefinitionSource::ProjectCody,
+            ancestor.join(".cody").join("commands"),
             SkillOrigin::LegacyCommandsDir,
         );
     }
@@ -1233,14 +1233,14 @@ fn discover_skill_roots(cwd: &Path) -> Vec<SkillRoot> {
         );
         push_unique_skill_root(
             &mut roots,
-            DefinitionSource::UserClaw,
-            home.join(".claw").join("skills"),
+            DefinitionSource::UserCody,
+            home.join(".cody").join("skills"),
             SkillOrigin::SkillsDir,
         );
         push_unique_skill_root(
             &mut roots,
-            DefinitionSource::UserClaw,
-            home.join(".claw").join("commands"),
+            DefinitionSource::UserCody,
+            home.join(".cody").join("commands"),
             SkillOrigin::LegacyCommandsDir,
         );
     }
@@ -1479,10 +1479,10 @@ fn render_agents_report(agents: &[AgentSummary]) -> String {
 
     for source in [
         DefinitionSource::ProjectCodex,
-        DefinitionSource::ProjectClaw,
+        DefinitionSource::ProjectCody,
         DefinitionSource::UserCodexHome,
         DefinitionSource::UserCodex,
-        DefinitionSource::UserClaw,
+        DefinitionSource::UserCody,
     ] {
         let group = agents
             .iter()
@@ -1537,10 +1537,10 @@ fn render_skills_report(skills: &[SkillSummary]) -> String {
 
     for source in [
         DefinitionSource::ProjectCodex,
-        DefinitionSource::ProjectClaw,
+        DefinitionSource::ProjectCody,
         DefinitionSource::UserCodexHome,
         DefinitionSource::UserCodex,
-        DefinitionSource::UserClaw,
+        DefinitionSource::UserCody,
     ] {
         let group = skills
             .iter()
@@ -1579,8 +1579,8 @@ fn render_agents_usage(unexpected: Option<&str>) -> String {
     let mut lines = vec![
         "Agents".to_string(),
         "  Usage            /agents".to_string(),
-        "  Direct CLI       claw agents".to_string(),
-        "  Sources          .codex/agents, .claw/agents, $CODEX_HOME/agents".to_string(),
+        "  Direct CLI       cody agents".to_string(),
+        "  Sources          .codex/agents, .cody/agents, $CODEX_HOME/agents".to_string(),
     ];
     if let Some(args) = unexpected {
         lines.push(format!("  Unexpected       {args}"));
@@ -1592,8 +1592,8 @@ fn render_skills_usage(unexpected: Option<&str>) -> String {
     let mut lines = vec![
         "Skills".to_string(),
         "  Usage            /skills".to_string(),
-        "  Direct CLI       claw skills".to_string(),
-        "  Sources          .codex/skills, .claw/skills, legacy /commands".to_string(),
+        "  Direct CLI       cody skills".to_string(),
+        "  Sources          .codex/skills, .cody/skills, legacy /commands".to_string(),
     ];
     if let Some(args) = unexpected {
         lines.push(format!("  Unexpected       {args}"));
@@ -1738,8 +1738,8 @@ mod tests {
             assert!(rename.status.success(), "git branch -m main should succeed");
         }
 
-        run_command(&root, "git", &["config", "user.name", "Claw Tests"]);
-        run_command(&root, "git", &["config", "user.email", "claw@example.com"]);
+        run_command(&root, "git", &["config", "user.name", "Cody Tests"]);
+        run_command(&root, "git", &["config", "user.email", "cody@example.com"]);
         fs::write(root.join("README.md"), "seed\n").expect("seed file");
         run_command(&root, "git", &["add", "README.md"]);
         run_command(&root, "git", &["commit", "-m", "chore: seed repo"]);
@@ -1774,9 +1774,9 @@ mod tests {
     }
 
     fn write_external_plugin(root: &Path, name: &str, version: &str) {
-        fs::create_dir_all(root.join(".claw-plugin")).expect("manifest dir");
+        fs::create_dir_all(root.join(".cody-plugin")).expect("manifest dir");
         fs::write(
-            root.join(".claw-plugin").join("plugin.json"),
+            root.join(".cody-plugin").join("plugin.json"),
             format!(
                 "{{\n  \"name\": \"{name}\",\n  \"version\": \"{version}\",\n  \"description\": \"commands plugin\"\n}}"
             ),
@@ -1785,9 +1785,9 @@ mod tests {
     }
 
     fn write_bundled_plugin(root: &Path, name: &str, version: &str, default_enabled: bool) {
-        fs::create_dir_all(root.join(".claw-plugin")).expect("manifest dir");
+        fs::create_dir_all(root.join(".cody-plugin")).expect("manifest dir");
         fs::write(
-            root.join(".claw-plugin").join("plugin.json"),
+            root.join(".cody-plugin").join("plugin.json"),
             format!(
                 "{{\n  \"name\": \"{name}\",\n  \"version\": \"{version}\",\n  \"description\": \"bundled commands plugin\",\n  \"defaultEnabled\": {}\n}}",
                 if default_enabled { "true" } else { "false" }
@@ -2227,7 +2227,7 @@ mod tests {
     fn lists_skills_from_project_and_user_roots() {
         let workspace = temp_dir("skills-workspace");
         let project_skills = workspace.join(".codex").join("skills");
-        let project_commands = workspace.join(".claw").join("commands");
+        let project_commands = workspace.join(".cody").join("commands");
         let user_home = temp_dir("skills-home");
         let user_skills = user_home.join(".codex").join("skills");
 
@@ -2243,7 +2243,7 @@ mod tests {
                 origin: SkillOrigin::SkillsDir,
             },
             SkillRoot {
-                source: DefinitionSource::ProjectClaw,
+                source: DefinitionSource::ProjectCody,
                 path: project_commands,
                 origin: SkillOrigin::LegacyCommandsDir,
             },
@@ -2260,7 +2260,7 @@ mod tests {
         assert!(report.contains("3 available skills"));
         assert!(report.contains("Project (.codex):"));
         assert!(report.contains("plan · Project planning guidance"));
-        assert!(report.contains("Project (.claw):"));
+        assert!(report.contains("Project (.cody):"));
         assert!(report.contains("deploy · Legacy deployment guidance · legacy /commands"));
         assert!(report.contains("User (~/.codex):"));
         assert!(report.contains("(shadowed by Project (.codex)) plan · User planning guidance"));
@@ -2277,7 +2277,7 @@ mod tests {
         let agents_help =
             super::handle_agents_slash_command(Some("help"), &cwd).expect("agents help");
         assert!(agents_help.contains("Usage            /agents"));
-        assert!(agents_help.contains("Direct CLI       claw agents"));
+        assert!(agents_help.contains("Direct CLI       cody agents"));
 
         let agents_unexpected =
             super::handle_agents_slash_command(Some("show planner"), &cwd).expect("agents usage");
