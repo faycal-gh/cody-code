@@ -1,0 +1,17 @@
+__pycache__/
+archive/
+.omx/
+.claw/
+.claw-agents/
+.sandbox-home/
+.sandbox-tmp/
+target/
+**/.claw/
+**/.claw-agents/
+**/.sandbox-home/
+**/.sandbox-tmp/
+rustup-init.exe
+vs_buildtools.exe
+# Local CLI artifacts
+.claude/settings.local.json
+.claude/sessions/

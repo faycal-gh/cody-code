@@ -1,0 +1,6 @@
+target/
+.omx/
+.claw/
+.claw-agents/
+.sandbox-home/
+.sandbox-tmp/
