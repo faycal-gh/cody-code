@@ -1,5 +1,7 @@
 # Cody Code
 
+@file:cody.png
+
 This repository contains a working Rust CLI for `cody`.
 
 ## Attribution
